@@ -1,0 +1,249 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 588
+  ClientWidth = 732
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnResize = OnResize
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Choose_Label: TLabel
+    Left = 40
+    Top = 34
+    Width = 114
+    Height = 13
+    Caption = 'Choose what to create:'
+  end
+  object Param_Label: TLabel
+    Left = 240
+    Top = 34
+    Width = 59
+    Height = 13
+    Caption = 'Parameters:'
+  end
+  object Sim_Label: TLabel
+    Left = 40
+    Top = 464
+    Width = 106
+    Height = 13
+    Caption = 'Simulation Parameters'
+  end
+  object T0_Label: TLabel
+    Left = 40
+    Top = 488
+    Width = 49
+    Height = 13
+    Caption = 'Start Time'
+  end
+  object TK_Label: TLabel
+    Left = 40
+    Top = 515
+    Width = 52
+    Height = 13
+    Caption = 'Finish Time'
+  end
+  object Dt_Label: TLabel
+    Left = 40
+    Top = 542
+    Width = 11
+    Height = 13
+    Caption = 'Dt'
+  end
+  object MoveParamLabel: TLabel
+    Left = 40
+    Top = 269
+    Width = 145
+    Height = 13
+    Caption = 'Move Parameters for Targets:'
+  end
+  object ResistParamLabel: TLabel
+    Left = 40
+    Top = 349
+    Width = 148
+    Height = 13
+    Caption = 'Resist Parameters for Targets:'
+  end
+  object Choose_RadioGroup: TRadioGroup
+    Left = 40
+    Top = 53
+    Width = 129
+    Height = 160
+    Items.Strings = (
+      'RLS'
+      'Command Post'
+      'Aircraft'
+      'Missile')
+    TabOrder = 0
+  end
+  object Log: TMemo
+    Left = 432
+    Top = 31
+    Width = 281
+    Height = 202
+    Align = alCustom
+    Lines.Strings = (
+      'Log start:')
+    TabOrder = 1
+  end
+  object Run: TButton
+    Left = 614
+    Top = 537
+    Width = 75
+    Height = 25
+    Caption = 'Run'
+    TabOrder = 2
+    OnClick = RunClick
+  end
+  object Create: TButton
+    Left = 496
+    Top = 537
+    Width = 75
+    Height = 25
+    Caption = 'Create'
+    TabOrder = 3
+    OnClick = CreateClick
+  end
+  object T0_Edit: TEdit
+    Left = 152
+    Top = 488
+    Width = 121
+    Height = 21
+    TabOrder = 4
+    Text = '0'
+  end
+  object TK_Edit: TEdit
+    Left = 152
+    Top = 515
+    Width = 121
+    Height = 21
+    TabOrder = 5
+    Text = '10'
+  end
+  object DT_Edit: TEdit
+    Left = 152
+    Top = 542
+    Width = 121
+    Height = 21
+    TabOrder = 6
+    Text = '0,1'
+  end
+  object XLE: TLabeledEdit
+    Left = 240
+    Top = 69
+    Width = 121
+    Height = 21
+    EditLabel.Width = 6
+    EditLabel.Height = 13
+    EditLabel.Caption = 'X'
+    TabOrder = 7
+  end
+  object YLE: TLabeledEdit
+    Left = 240
+    Top = 112
+    Width = 121
+    Height = 21
+    EditLabel.Width = 6
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Y'
+    TabOrder = 8
+  end
+  object ThirdLE: TLabeledEdit
+    Left = 240
+    Top = 152
+    Width = 121
+    Height = 21
+    EditLabel.Width = 60
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Third_Param'
+    TabOrder = 9
+  end
+  object ForthLE: TLabeledEdit
+    Left = 240
+    Top = 192
+    Width = 121
+    Height = 21
+    EditLabel.Width = 56
+    EditLabel.Height = 13
+    EditLabel.Caption = 'ForthParam'
+    TabOrder = 10
+  end
+  object P0Label: TLabeledEdit
+    Left = 40
+    Top = 309
+    Width = 106
+    Height = 21
+    EditLabel.Width = 16
+    EditLabel.Height = 13
+    EditLabel.Caption = 'P0:'
+    TabOrder = 11
+  end
+  object mFuelLabel: TLabeledEdit
+    Left = 170
+    Top = 309
+    Width = 106
+    Height = 21
+    EditLabel.Width = 51
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Fuel Mass:'
+    TabOrder = 12
+  end
+  object mCritFuelLabel: TLabeledEdit
+    Left = 299
+    Top = 309
+    Width = 105
+    Height = 21
+    EditLabel.Width = 86
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Critical Fuel Mass:'
+    TabOrder = 13
+  end
+  object DmLabel: TLabeledEdit
+    Left = 432
+    Top = 309
+    Width = 106
+    Height = 21
+    EditLabel.Width = 19
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Dm:'
+    TabOrder = 14
+  end
+  object CxLabel: TLabeledEdit
+    Left = 40
+    Top = 389
+    Width = 106
+    Height = 21
+    EditLabel.Width = 20
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Cx: '
+    TabOrder = 15
+  end
+  object RoLabel: TLabeledEdit
+    Left = 170
+    Top = 389
+    Width = 106
+    Height = 21
+    EditLabel.Width = 20
+    EditLabel.Height = 13
+    EditLabel.Caption = 'Ro: '
+    TabOrder = 16
+  end
+  object SLabel: TLabeledEdit
+    Left = 299
+    Top = 389
+    Width = 105
+    Height = 21
+    EditLabel.Width = 10
+    EditLabel.Height = 13
+    EditLabel.Caption = 'S:'
+    TabOrder = 17
+  end
+end

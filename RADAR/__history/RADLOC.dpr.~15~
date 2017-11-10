@@ -1,0 +1,96 @@
+program RADLOC;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  System.SysUtils,
+  Targets in 'Targets.pas';
+
+const dt = 0.1;
+
+type
+  RLC = class                 //РЛС
+    x,y: real; tar: integer;  //координаты и количество целей
+    R: real; time: real;      //радиус обнаружения и время
+    targets: array of TTarget;      //массив целей
+    constructor create(t0: real);   //конструктор, задаются кол-во целей и их параметры
+    procedure peleng(ti: real);     //процедура проверки расстояния до цели и азимута, а также записи, если в радиусе поражения
+    destructor des;                 //деструктор (пустой)
+  end;
+
+var
+  Radar: RLC;
+  t0, time, tk: real;  //время начала, текущее и конечное
+  f: text; filename: string; //файл для записи и его имя
+
+constructor RLC.create(t0: real);
+//задание начальных параметров и создание массива целей
+var
+  i: integer; init_ttype: integer;                   //тип цели
+  init_x, init_y, init_v, init_acc, init_time: real; //начальные параметры для целей
+  air: TAircraft; mis: TMissle;                      //объекты (нужны для создания массива)
+
+begin
+  write('Input radar coordinates: '); readln(x, y);  //задание положения РЛС
+  write('Input radar radius: '); readln(R);          //задание радиуса обнаружения
+  write('Input targets amount: '); readln(tar);      //задание количества целей
+  SetLength(targets, tar);
+
+  //создание массива целей
+  randomize;
+  for I := 0 to tar-1 do begin
+    init_ttype := random(2);                                              //определение цели(случайное - самолёт/ракета)
+    write('Input target initial coordinates: '); readln(init_x, init_y);  //задание начального положения цели
+    write('Input target initial speed: '); readln(init_v);                //начальная скорость
+    //самолёт
+    if init_ttype = 0 then
+      targets[i] := TAircraft.create(init_x, init_y, init_v, t0, 0)
+    //ракета
+    else begin
+      write('Input missle acceleration: '); readln(init_acc);             //нужен ещё 1 парамет - ускорение
+      targets[i] := TMissle.create(init_x, init_y, init_v, init_acc, t0, 1);
+    end;
+  end;
+end;
+
+procedure RLC.peleng(ti: real);
+var
+  i: Integer;
+  D, Az: real;
+begin
+  for i := 0 to tar-1 do begin
+    targets[i].move(ti);
+    D := sqrt(sqr(x - targets[i].x)+sqr(y - targets[i].y));
+    if D <= R then begin
+      Az := arctan((targets[i].y - y)/(targets[i].x - x));
+      write(f, D:7:5,';', Az:7:5,';', i:3, ';');
+      if targets[i].target_type = 0 then writeln(f, ' air')
+      else writeln(f, ' mis');
+    end;
+  end;
+  time := ti;
+end;
+
+destructor RLC.des;
+begin
+
+end;
+
+begin
+  write('Input start and finish simulation time: '); readln(t0, tk);
+  write('Input output file name: '); readln(filename);
+  assignfile(f, filename); rewrite(f);
+  writeln(f, ' Dist  ',';  Az   ',';num',';type');
+  radar := RLC.create(t0);
+  time := t0;
+  while time <= tk do begin
+    radar.peleng(time);
+    time := time + dt;
+  end;
+  writeln('Simulation finished');
+  closefile(f);
+  writeln('Hit <Enter> to exit.');
+  readln;
+end.

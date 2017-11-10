@@ -1,0 +1,157 @@
+unit MTarget;
+
+//!!!НАЧАЛО INTERFACE
+interface
+  type
+    TTargetType = (Air, Mis);
+
+    //координаты
+    TPoint = record
+      x,y: real;
+    end;
+
+    //базовый класс
+    TPosObject = class (TObject)                                      //ТУТ
+      CurPosition: TPoint;  //текущая позиция                         //ВСЁ
+      CurTime: real;        //время                                   //ЗАКОНЧЕНО
+      InitPosition: TPoint; //начальная позиция
+      //constructor Create(init_x, init_y, init_t);  //!!!done!!!
+      constructor Create(init_param: array of real);
+      procedure move(ti: real); virtual; abstract; //передвижение, у некоторых нет
+      destructor Destroy;
+    end;
+
+    //тип цель, базовый для TAircraft и TMissile               //ТУТ
+    TTarget = class(TPosObject)                                //ВСЁ
+      v: real;          //скорость                             //ЗАКОНЧЕНО
+      Course: real;     //угол
+      TargetType: TTargetType; //тип цели AIR/MIS
+      InitTime: real;
+      //constructor Create(init_x, init_y, init_v, init_course, init_t: real);  //!!!done!!!
+
+      constructor Create(init_param: array of real);
+    end;
+
+    //самолёт
+    TAircraft = class(TTarget)
+      //constructor Create(init_x, init_y, init_v, init_course, init_t: real); //!!!done!!!    //ТУТ
+      constructor Create(init_param: array of real);                                                //ВСЁ
+      procedure move(ti: real); override; //движение самолёта                         //ЗАКОНЧЕНО
+    end;
+
+    //ракета
+    TMissile = class(TTarget)
+      acc: real;   //ускорение                                                                           //ТУТ
+      //constructor Create(init_x, init_y, init_v, init_acc, init_course, init_t: real); //!!!done!!!    //ВСЁ
+      constructor Create(init_param: array of real);                                                          //ЗАКОНЧЕНО
+      procedure move(ti: real); override; //движение ракеты
+    end;
+
+    //командный пост
+    TCommandPost = class(TPosObject)                                 //ТУТ ВСЁ ЗАКОНЧЕНО
+      SafetyDistance: real; //безопасная дистанция (если залетает цель в этот радиус то командный пост считается уничтоженным, пока не учитывать)
+      //constructor Create(init_x, init_y, init_t, init_SD: real);  //!!!done!!!
+      constructor Create(init_param: array of real);
+    end;
+
+    //РЛС
+    TRLS = class(TPosObject)
+      RMax: real;         //максимальная дистанция обнаружения                        //ТУТ
+      Distance: real;     //расстояние до цели                                        //ПОКА
+      Alfa: real;       //азимут                                                      //ЧТО
+      //constructor Create(init_x, init_y, init_t, init_R: real);  //!!!done!!!       //ВСЁ
+      constructor Create(init_param: array of real);
+      function Measure(ti: real; target: TTarget): boolean; //метод обнаружения целей
+    end;
+
+//!!!НАЧАЛО IMPLEMENTATION
+implementation
+
+  //constructor TPosObject.Create(init_x, init_y, init_t); //inherited для TTarget, TRLS, TCommandPost
+  constructor TPosObject.Create(init_param: array of Real);
+  begin
+    InitPosition.x := init_param[0];     //начальная позиция
+    InitPosition.y := init_param[1];
+    CurPosition.x := init_param[0];      //текущая позиция
+    CurPosition.y := init_param[1];
+    CurTime := init_param[2];            //текущее время
+  end;
+
+  //(изменить interface); done
+  //constructor TTarget.Create(init_x, init_y, init_v, init_course, init_t: real); //inherited для TAircraft и TMissile
+  constructor TTarget.Create(init_param: array of Real);
+  begin
+    inherited Create(init_param);
+    InitTime := init_param[2];
+    v := init_param[3];
+    course := arctan(InitPosition.x/InitPosition.y); if InitPosition.x < 0 then course := course + pi;
+  end;
+
+  //(изменить interface); done
+  //constructor TAircraft.Create(init_x, init_y, init_v, init_course, init_t: real);
+  constructor TAircraft.Create(init_param: array of Real);
+  begin
+    inherited Create(init_param); //родительский
+    TargetType := Air;
+  end;
+
+  procedure TAircraft.move(ti: Real);
+  begin
+    CurTime := ti;
+    CurPosition.x := InitPosition.x-v*cos(Course)*(CurTime-InitTime);
+    CurPosition.y := InitPosition.y-v*sin(Course)*(CurTime-InitTime);
+  end;
+
+  //конструктор для ракеты
+  //constructor TMissile.Create(init_x, init_y, init_v, init_acc, init_course, init_t: real);
+  constructor TMissile.Create(init_param: array of Real);
+  begin
+    inherited Create(init_param); //родительский
+    acc := init_param[4];
+    TargetType := Mis;
+  end;
+
+  procedure TMissile.move(ti: Real);
+  begin
+    CurTime := ti;
+    CurPosition.x := InitPosition.x-(v+acc*(CurTime-InitTime))*cos(course)*(CurTime-InitTime);
+    CurPosition.y := InitPosition.y-(v+acc*(CurTime-InitTime))*sin(course)*(CurTime-InitTime);
+  end;
+
+  //constructor TCommandPost(init_x, init_y, init_t, init_SD: real);  //командный пост
+  constructor TCommandPost.Create(init_param: array of real);
+  begin
+    inherited Create(init_param);  //родительский
+    SafetyDistance := init_param[3];
+  end;
+
+  //constructor TRLS.Create(init_x, init_y, init_t, init_R: real);  //РЛС
+  constructor TRLS.Create(init_param: array of Real);
+  begin
+    inherited Create(init_param);  //родительский
+    RMax := init_param[3];
+  end;
+
+  function TRLS.measure(ti: real; target: TTarget): boolean;
+  //проверка: в зоне досягаемости ли цель, если да, то возвращается значение true
+  //но зачем тогда поле alfa нужно?????????
+  begin
+    curTime := ti;
+    if target.TargetType = Air then
+      with target as TAircraft do
+        target.move(ti)
+    else
+      with target as TMissile do
+        target.move(ti);
+    target.move(ti);
+    distance := sqrt(sqr(CurPosition.x - target.CurPosition.x) + sqr(CurPosition.y - target.Curposition.y));
+    alfa := target.course;
+    if distance <= RMax then
+      measure := true
+    else measure := false;
+  end;
+
+  destructor TPosObject.Destroy;
+  begin
+  end;
+end.
