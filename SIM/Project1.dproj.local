@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.436,C:\Users\Павел\Documents\RAD Studio\Projects\SIM.dfm=C:\Users\Павел\Documents\RAD Studio\Projects\SIM\SIM.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.920,C:\Users\Павел\Documents\RAD Studio\Projects\Unit1.dfm=C:\Users\Павел\Documents\RAD Studio\Projects\SIM.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.436,C:\Users\Павел\Documents\RAD Studio\Projects\SIM.pas=C:\Users\Павел\Documents\RAD Studio\Projects\SIM\SIM.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.997,=C:\Users\Павел\Documents\RAD Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.920,C:\Users\Павел\Documents\RAD Studio\Projects\Unit1.pas=C:\Users\Павел\Documents\RAD Studio\Projects\SIM.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.358,C:\Users\Павел\Documents\RAD Studio\Projects\Project1.dproj=C:\Users\Павел\Documents\RAD Studio\Projects\SIM\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>
