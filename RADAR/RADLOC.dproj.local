@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.134,=C:\Users\Павел\Documents\RAD Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.518,C:\Users\Павел\Documents\RAD Studio\Projects\RADAR\TTarget.pas=C:\Users\Павел\Documents\RAD Studio\Projects\RADAR\Targets.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.002,C:\Users\Павел\Documents\RAD Studio\Projects\Project1.dproj=C:\Users\Павел\Documents\RAD Studio\Projects\RADAR\RADLOC.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.816,C:\Users\Павел\Documents\RAD Studio\Projects\Unit1.pas=C:\Users\Павел\Documents\RAD Studio\Projects\RADAR\TTarget.pas</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,101 @@
+unit SIMULATION;
+
+interface
+
+  uses MTarget;
+
+  type
+    //симуляция
+    TSimulator = class(TObject)
+      T0, TK: real;   //начальное и конечное время
+      dt: real;      //на сколько изменяется время
+      RLS: TRLS;      //рлс см выше
+      CP: TCommandPost;  //командный пост см выше
+      Targets: array of TTarget; //массив целей
+      FT: text;                  //файл для вывода
+      TargetCount: integer;      //сколько целей
+      constructor Create(init_t0, init_tk, init_dt:real);
+      procedure CreateTarget(init_tt: TTargetType; init_param: array of real); //создание целей
+      //procedure CreateCP(init_x, init_y, init_t, init_SD: real);
+      procedure CreateCP(init_param: array of real);
+      //procedure CreateRLS(init_x, init_y, init_t, init_R: real);
+      procedure CreateRLS(init_param: array of real);
+      procedure ChangeTime(param: array of real);
+      //procedure Run;  //запус симуляции
+      procedure Run;
+      destructor Destroy; override;
+    end;
+
+implementation
+
+  constructor TSimulator.Create(init_t0, init_tk, init_dt: real);
+  begin
+    t0 := init_t0;
+    tk := init_tk;
+    dt := init_dt;
+    TargetCount := 0;
+    assign(FT, 'file.txt');
+    rewrite(FT);
+    writeln(FT, ' Time  ; distance;   AZ   ; type');
+  end;
+
+  procedure TSimulator.CreateCP(init_param: array of real);
+  begin
+    CP := TCommandPost.Create(init_param);
+  end;
+
+  procedure TSimulator.CreateRLS(init_param: array of real);
+  begin
+    RLS := TRLS.Create(init_param);
+  end;
+
+  procedure TSimulator.CreateTarget(init_tt: TTargetType; init_param: array of real);
+  begin
+    inc(TargetCount);
+    setlength(Targets, TargetCount);
+    if init_tt = Air then
+      Targets[TargetCount-1] := TAircraft.Create(init_param)
+    else
+      Targets[TargetCount-1] := TMissile.Create(init_param);
+  end;
+
+  procedure TSimulator.ChangeTime(param: array of Real);
+  var i: integer;
+  begin
+    t0 := param[0];
+    tk := param[1];
+    dt := param[2];
+    for i := 0 to TargetCount-1 do targets[i].InitTime := t0;
+    CP.CurTime := t0;
+    RLS.CurTime := t0;
+  end;
+
+  //procedure TSimulator.Run;
+  procedure TSimulator.Run;
+  var
+  time: real; flag: boolean;
+  i: Integer;
+  begin
+    time := T0;
+    while time < Tk do begin
+      for i := 0 to TargetCount-1 do begin
+        flag := RLS.Measure(time, Targets[i]);
+        if flag then begin
+          write(FT, time:7:3,';', RLS.Distance:8:5, ';', RLS.Alfa:8:5, ';');
+          case Targets[i].TargetType of
+          Air: writeln(FT, ' Air');
+          Mis: writeln(FT, ' Mis');
+          end;//case
+        end; //if
+      end;//for
+      time := time + dt;
+    end;//while
+    writeln(FT, 'Simulation finished');
+  end;
+
+  destructor TSimulator.destroy;
+  begin
+    closefile(ft);
+  end;
+
+end.
