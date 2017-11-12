@@ -141,6 +141,8 @@ interface
         DT: real;
         Integrator: TTargetIntegrator;
         procedure Run;
+        procedure CreateCP(initParam: array of real);
+        procedure CreateRLS(initParam: array of real);
         constructor Create(initParam: array of real; hander: hWnd);
         destructor Destroy;
       protected
@@ -395,6 +397,16 @@ implementation
     close(self.FT);
   end;
 
+  procedure TSimulator.CreateCP(initParam: array of Real);
+  begin
+    self.CP := TCommandPost.Create(InitParam);
+  end;
+
+  procedure TSimulator.CreateRLS(initParam: array of Real);
+  begin
+    self.RLS := TRLS.Create(InitParam);
+  end;
+
   procedure TSimulator.Run;
   var time: real; item: integer; flag: boolean;
       Target: TTarget; newLine: boolean;
@@ -404,7 +416,7 @@ implementation
     time := self.T0;
     flag := False; newLine := False;
     while time <= self.TK do begin
-      for item := 0 to TargetCount-1 do begin
+      for item := 0 to self.Targets.Count-1 do begin
         Target := self.Targets.Items[item];
         self.Integrator.Run(Target, time, time+dt);
         flag := RLS.Peleng(time, Target);
@@ -417,7 +429,7 @@ implementation
       end;//for item
       time := time + self.DT;
       if newLine then writeln(self.FT, '');
-      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, integer(self));
+      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
     end;//while time
     close(self.FT);
   end;//procedure
