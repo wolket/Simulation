@@ -45,6 +45,9 @@ type
     procedure CreateChoiceChange(Sender: TObject);
     procedure SwapActive(choice: boolean);
     procedure OnCreate(Sender: TObject);
+    procedure CreateButtonClick(Sender: TObject);
+    procedure DrawSimulation(var msg: TMessage); message WM_DRAW_SIMULATION;
+    procedure RunSimulationButtonClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -52,11 +55,68 @@ type
   end;
 
 var
-  Form2: TForm2; Simulator: TSimulator;
+  Form2: TForm2;
+  Simulator: TSimulator;
 
 implementation
 
 {$R *.dfm}
+
+procedure TForm2.CreateButtonClick(Sender: TObject);
+var initParam: array of real;
+procedure fillParam;
+begin
+  setLength(initParam, 9);
+  initParam[3]:=strToFloat(ThirdParam.Text);
+  initParam[4]:=strToFloat(PParam.Text);
+  initParam[5]:=strToFloat(FuelMassParam.Text);
+  initParam[6]:=strToFloat(FuelConsParam.Text);
+  initParam[7]:=strToFloat(CritFuelParam.Text);
+  initParam[8]:=strToFloat(SParam.Text);
+  initParam[9]:=strToFloat(CxParam.Text);
+end;
+procedure showTargetParam;
+begin
+  CreateLog.Lines.Add('X: ' + floatToStr(initParam[0]) + '; Y: ' + floatToStr(initParam[1]) + '; Mass: ' + floatToStr(initParam[3]));
+  CreateLog.Lines.Add('P: ' + floatToStr(InitParam[4]) + '; Fuel Mass: ' + floatToStr(initParam[5]) + '; Fuel Consumption: ' + floatToStr(initParam[6]) + '; Critical Fuel Mass: ' + floatToStr(initParam[7]));
+  CreateLog.Lines.Add('Square: ' + floatToStr(initParam[8]) + '; Cx: ' + floatToStr(initParam[9]));
+end;
+  begin
+  setLength(initParam, 4);
+  initParam[0] := strToFloat(self.XParam.Text);
+  initParam[1] := strToFloat(self.YParam.Text);
+  initParam[2] := strToFloat(self.T0Edit.Text);
+  initParam[3] := strToFLoat(self.ThirdParam.Text);
+  case self.CreateChoice.ItemIndex of
+    0:
+    begin
+      Simulator.CreateCP(initParam);
+      CreateLog.Lines.Add('CP Created.');
+      CreateLog.Lines.Add('X: ' +  floatToStr(initParam[0]) + '; Y: ' + floatToStr(initParam[1]) + '; Safe Distance: ' + floatToStr(initParam[3]));
+    end;
+    1:
+    begin
+      Simulator.CreateRLS(InitParam);
+      CreateLog.Lines.Add('RLS Created.');
+      CreateLog.Lines.Add('X: ' +  floatToStr(initParam[0]) + '; Y: ' + floatToStr(initParam[1]) + '; R Max: ' + floatToStr(initParam[3]));
+    end;
+    2:
+    begin
+      fillParam;
+      Simulator.Targets.AddTarget(Air,initParam);
+      CreateLog.Lines.Add('Aircraft Created.');
+      showTargetParam;
+    end;
+    3:
+    begin
+      fillParam;
+      Simulator.Targets.AddTarget(Mis,initParam);
+      CreateLog.Lines.Add('Missile Created.');
+      showTargetParam;
+    end;
+  end;
+
+end;
 
 procedure TForm2.CreateChoiceChange(Sender: TObject);
 begin
@@ -73,11 +133,14 @@ procedure TForm2.OnCreate(Sender: TObject);
 var initParam: array[0..2] of real;
 begin
   initParam[0] := 0; initParam[1] := 100; initParam[2] := 0.1;
-  Simulator.Create(initParam, self.Handle);
+  Simulator := TSimulator.Create(initParam, self.Handle);
   self.Constraints.MinHeight := 550;
   self.Constraints.MinWidth := 700;
   self.PageControl1.Constraints.MinHeight := self.Constraints.MinHeight;
   self.PageControl1.Constraints.MinWidth := self.Constraints.MinWidth;
+  self.T0Edit.Text := '0,0';
+  self.TKEdit.Text := '100,0';
+  self.DTEdit.Text := '0,1';
 end;
 
 procedure TForm2.OnResize(Sender: TObject);
@@ -104,8 +167,18 @@ begin
 
   self.SimulationImage.Top := 50;
   self.SimulationImage.Left := 10;
-  self.SimulationImage.Canvas.Brush.Color := RGB(100,50,200);
-  self.SimulationImage.Canvas.Rectangle(0,0, self.Width, self.Height);
+end;
+
+procedure TForm2.RunSimulationButtonClick(Sender: TObject);
+begin
+  if (Simulator.CP <> Nil) and (Simulator.RLS <> Nil) and (Simulator.Targets.Count <> 0) then begin
+    Simulator.T0 := strToFloat(self.T0Edit.Text);
+    Simulator.TK := strToFloat(self.TKEdit.Text);
+    Simulator.DT := strToFloat(self.DTEdit.Text);
+    CreateLog.Lines.Add('Starting Simulation.');
+    Simulator.Run;
+    CreateLog.Lines.Add('Simulation Finished.');
+  end;
 end;
 
 procedure TForm2.SwapActive(choice: boolean);
@@ -116,6 +189,19 @@ begin
   self.CritFuelParam.Enabled := choice;
   self.SParam.Enabled := choice;
   self.CxParam.Enabled := choice;
+end;
+
+procedure TForm2.DrawSimulation(var msg: TMessage);
+var target: TTarget; initParam: array[0..3] of integer;
+begin
+  self.SimulationImage.Canvas.Brush.Color := RGB(255,0,0);
+  (*target := Simulator.Targets[0];
+  initParam[0]:=Trunc(Target.CurPosition.x);
+  initParam[1]:=Trunc(Target.CurPosition.y);
+  initParam[2]:=Trunc(Target.CurPosition.x) + 10;
+  initParam[3]:=Trunc(Target.CurPosition.y) + 10;
+  self.SimulationImage.Canvas.Rectangle(initParam[0], initParam[1], initParam[2], initParam[3]);*)
+  self.SimulationImage.Canvas.Ellipse(100,100,200,200);
 end;
 
 end.
