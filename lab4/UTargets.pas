@@ -139,14 +139,15 @@ interface
         T0: real;
         TK: real;
         DT: real;
+        Handler: hWnd;
         Integrator: TTargetIntegrator;
         procedure Run;
         procedure CreateCP(initParam: array of real);
         procedure CreateRLS(initParam: array of real);
-        constructor Create(initParam: array of real; hander: hWnd);
+        constructor Create(initParam: array of real);
         destructor Destroy;
       protected
-        Handler: hWnd;
+        //Handler: hWnd;
     end;
 
 implementation
@@ -356,10 +357,8 @@ implementation
   function TTargetList.AddTarget(TargetType: TTargetType; initParam: array of Real): integer;
   var Aircraft: TAircraft; Missile: TMissile;
   begin
-    if TargetType = Air then Aircraft := TAircraft.Create(initParam)
-    else Missile := TMissile.Create(initParam);
-    if Aircraft <> Nil then self.Add(Aircraft)
-    else self.Add(Missile);
+    if TargetType = Air then begin Aircraft := TAircraft.Create(initParam); self.Add(Aircraft); end;
+    if TargetType = Mis then begin Missile := TMissile.Create(initParam); self.Add(Missile); end;
     Aircraft := Nil; Missile := Nil;
     result := self.Count;
   end;
@@ -383,14 +382,13 @@ implementation
     inherited Clear;
   end;
 
-  constructor TSimulator.Create(initParam: array of real; hander: hWnd);
+  constructor TSimulator.Create(initParam: array of real);
   begin
     self.T0 := initParam[0];
     self.TK := initParam[1];
     self.DT := initParam[2];
     self.TargetCount := 0;
     self.Targets := TTargetList.Create;
-    self.Handler := handler;
     assign(self.FT, 'Temp.txt');
     rewrite(self.FT);
     writeln(self.FT, '  time ;  Dist ; Course ;   V   ;  Type');
@@ -414,7 +412,7 @@ implementation
     assign(self.FT, 'temp.txt');
     append(self.FT);
     time := self.T0;
-    flag := False; newLine := False;
+    newLine := False;
     while time <= self.TK do begin
       for item := 0 to self.Targets.Count-1 do begin
         Target := self.Targets.Items[item];
@@ -440,7 +438,7 @@ implementation
   end;
 
   procedure TTargetIntegrator.Run(var Target: TTarget; t0: real; tk: real);
-  var i: integer; dt, time: real;
+  var dt, time: real;
   begin
     dt := (tK - T0)/self.num;
     time := t0;

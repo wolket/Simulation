@@ -12,6 +12,8 @@ const
   EditLabelHeight = 34;
   EditLabelWidthGap = 15;
   EditLabelHeightGap = 14;
+  MaxImageHeight = 667;
+  MaxImageWidth = 1000;
 
 type
 
@@ -49,7 +51,9 @@ type
     procedure DrawSimulation(var msg: TMessage); message WM_DRAW_SIMULATION;
     procedure RunSimulationButtonClick(Sender: TObject);
   private
-    { Private declarations }
+    CenterCoordinates: array[0..1] of integer; //понадобится для отрисовки, максимальные координаты
+    FirstCheck: boolean;                    //проверка, была ли в первый раз запущена процедура отрисовки
+    Ratio: array[0..1] of real;          //коэффициенты перехода для отрисовки
   public
     { Public declarations }
   end;
@@ -104,14 +108,14 @@ end;
     begin
       fillParam;
       Simulator.Targets.AddTarget(Air,initParam);
-      CreateLog.Lines.Add('Aircraft Created.');
+      CreateLog.Lines.Add('Aircraft Created.' + intToStr(Simulator.Targets.Count));
       showTargetParam;
     end;
     3:
     begin
       fillParam;
       Simulator.Targets.AddTarget(Mis,initParam);
-      CreateLog.Lines.Add('Missile Created.');
+      CreateLog.Lines.Add('Missile Created.' + intToStr(Simulator.Targets.Count));
       showTargetParam;
     end;
   end;
@@ -127,13 +131,16 @@ begin
   end;
   if (self.CreateChoice.ItemIndex=0) or (self.CreateChoice.ItemIndex=1) then self.SwapActive(false)
   else self.SwapActive(True);
+  self.Width := self.Width + 1;
+  self.Width := self.Width - 1;
 end;
 
 procedure TForm2.OnCreate(Sender: TObject);
 var initParam: array[0..2] of real;
 begin
   initParam[0] := 0; initParam[1] := 100; initParam[2] := 0.1;
-  Simulator := TSimulator.Create(initParam, self.Handle);
+  Simulator := TSimulator.Create(initParam);
+  Simulator.Handler := self.Handle;
   self.Constraints.MinHeight := 550;
   self.Constraints.MinWidth := 700;
   self.PageControl1.Constraints.MinHeight := self.Constraints.MinHeight;
@@ -141,6 +148,22 @@ begin
   self.T0Edit.Text := '0,0';
   self.TKEdit.Text := '100,0';
   self.DTEdit.Text := '0,1';
+
+  self.CenterCoordinates[0] := 0; self.CenterCoordinates[1] := 0;
+  self.FirstCheck := True;
+  self.Ratio[0] := 0; self.Ratio[1] := 0;
+
+  //вычисление координат центра
+  self.CenterCoordinates[0] := self.SimulationImage.Width div 2;
+  self.CenterCoordinates[1] := self.SimulationImage.Height div 2;
+  //обводка+координатные линии
+  self.SimulationImage.Canvas.Brush.Color := RGB(0, 50, 50);
+  self.SimulationImage.Canvas.FrameRect(Rect(Point(0, 0), Point(self.SimulationImage.Width-1, self.SimulationImage.Height-2)));
+  self.SimulationImage.Canvas.Brush.Color := RGB(100,100,100);
+  self.SimulationImage.Canvas.MoveTo(0, self.CenterCoordinates[1]);
+  self.SimulationImage.Canvas.LineTo(self.SimulationImage.Width, self.CenterCoordinates[1]);
+  self.SimulationImage.Canvas.MoveTo(self.CenterCoordinates[0], 0);
+  self.SimulationImage.Canvas.LineTo(self.CenterCoordinates[0], self.SimulationImage.Height);
 end;
 
 procedure TForm2.OnResize(Sender: TObject);
@@ -192,16 +215,86 @@ begin
 end;
 
 procedure TForm2.DrawSimulation(var msg: TMessage);
-var target: TTarget; initParam: array[0..3] of integer;
+var target: TTarget;
+  i, k: Integer; MaxX,MaxY: real;
+  DrawCoordinates: array[0..3] of integer;
+procedure CheckMinMax(obj: TPosObject);
+//нахождение максимального значения Х и У объектов симуляции по модулю
+//потом эти значения будут удвоены и составлены коэффициенты перехода
 begin
-  self.SimulationImage.Canvas.Brush.Color := RGB(255,0,0);
-  (*target := Simulator.Targets[0];
-  initParam[0]:=Trunc(Target.CurPosition.x);
-  initParam[1]:=Trunc(Target.CurPosition.y);
-  initParam[2]:=Trunc(Target.CurPosition.x) + 10;
-  initParam[3]:=Trunc(Target.CurPosition.y) + 10;
-  self.SimulationImage.Canvas.Rectangle(initParam[0], initParam[1], initParam[2], initParam[3]);*)
-  self.SimulationImage.Canvas.Ellipse(100,100,200,200);
+  if abs(obj.CurPosition.x) > MaxX then MaxX := obj.CurPosition.x;
+  if abs(obj.CurPosition.y) > MaxY then MaxY := obj.CurPosition.y;
+end;
+begin
+  if self.FirstCheck then begin
+    (*Target := Simulator.Targets[0];
+    MaxX := abs(Target.CurPosition.x);
+    MaxY := abs(Target.CurPosition.y);
+    for i := 1 to Simulator.Targets.Count-1 do begin
+      Target := Simulator.Targets[i];
+      CheckMinMax(Target);
+    end;
+    CheckMinMax(Simulator.CP);
+    CheckMinMax(Simulator.RLS);*)
+    //вычисление коэффициентов преобразования
+    self.Ratio[0] := self.SimulationImage.Width/MaxImageWidth/2;
+    self.Ratio[1] := self.SimulationImage.Height/MaxImageHeight/2;
+    //вычисление координат центра
+    self.CenterCoordinates[0] := self.SimulationImage.Width div 2;
+    self.CenterCoordinates[1] := self.SimulationImage.Height div 2;
+    //обводка+координатные линии
+    self.SimulationImage.Canvas.Brush.Color := RGB(0, 50, 50);
+    self.SimulationImage.Canvas.FrameRect(Rect(Point(0, 0), Point(self.SimulationImage.Width-1, self.SimulationImage.Height-2)));
+    self.SimulationImage.Canvas.Brush.Color := RGB(100,100,100);
+    self.SimulationImage.Canvas.MoveTo(0, self.CenterCoordinates[1]);
+    self.SimulationImage.Canvas.LineTo(self.SimulationImage.Width, self.CenterCoordinates[1]);
+    self.SimulationImage.Canvas.MoveTo(self.CenterCoordinates[0], 0);
+    self.SimulationImage.Canvas.LineTo(self.CenterCoordinates[0], self.SimulationImage.Height);
+
+    //рлс и КП
+    self.SimulationImage.Canvas.Brush.Color := clAqua;
+    self.SimulationImage.Canvas.Ellipse(Trunc((Simulator.RLS.CurPosition.x - Simulator.RLS.RMax)*Ratio[0] + CenterCoordinates[0]),
+                                        Trunc((-Simulator.RLS.CurPosition.y - Simulator.RLS.RMax)*Ratio[1] + CenterCOordinates[1]),
+                                        Trunc((Simulator.RLS.CurPosition.x + Simulator.RLS.RMax)*Ratio[0] + CenterCoordinates[0]),
+                                        Trunc((-Simulator.RLS.CurPosition.y+ Simulator.RLS.RMax)*Ratio[1] + CenterCOordinates[1]));
+    self.SimulationImage.Canvas.Brush.Color := RGB(0,100,100);
+    self.SimulationImage.Canvas.Rectangle(Trunc(Simulator.RLS.CurPosition.x*Ratio[0] + CenterCoordinates[0])-1,
+                                          Trunc(-Simulator.RLS.CurPosition.y*Ratio[1] + CenterCOordinates[1])-1,
+                                          Trunc(Simulator.RLS.CurPosition.x*Ratio[0] + CenterCoordinates[0])+2,
+                                          Trunc(-Simulator.RLS.CurPosition.y*Ratio[1] + CenterCOordinates[1])+2);
+    self.SimulationImage.Canvas.Brush.Color := clFuchsia;
+    self.SimulationImage.Canvas.Ellipse(Trunc((Simulator.CP.CurPosition.x - Simulator.CP.SafetyDistance)*Ratio[0] + CenterCoordinates[0]),
+                                        Trunc((-Simulator.CP.CurPosition.y - Simulator.CP.SafetyDistance)*Ratio[1] + CenterCOordinates[1]),
+                                        Trunc((Simulator.CP.CurPosition.x + Simulator.CP.SafetyDistance)*Ratio[0] + CenterCoordinates[0]),
+                                        Trunc((-Simulator.CP.CurPosition.y+ Simulator.CP.SafetyDistance)*Ratio[1] + CenterCOordinates[1]));
+    self.SimulationImage.Canvas.Brush.Color := RGB(100,0,100);
+    self.SimulationImage.Canvas.Rectangle(Trunc(Simulator.CP.CurPosition.x*Ratio[0] + CenterCoordinates[0])-1,
+                                          Trunc(-Simulator.CP.CurPosition.y*Ratio[1] + CenterCOordinates[1])-1,
+                                          Trunc(Simulator.CP.CurPosition.x*Ratio[0] + CenterCoordinates[0])+2,
+                                          Trunc(-Simulator.CP.CurPosition.y*Ratio[1] + CenterCOordinates[1])+2);
+
+    self.CreateLog.Lines.Add(floatToStr(Ratio[0]) + '; ' + floatToStr(Ratio[1]));
+    self.FirstCheck := False;
+  end
+  else
+  for k := 0 to (Simulator.Targets.Count-1) do begin
+
+    Target := Simulator.Targets[k];
+    self.SimulationImage.Canvas.Brush.Color := RGB(255, 0, 0);
+    DrawCoordinates[0] := Trunc(Target.CurPosition.x*self.Ratio[0]+self.CenterCoordinates[0]);
+    DrawCoordinates[1] := Trunc(-Target.CurPosition.y*self.Ratio[1]+self.CenterCoordinates[1]);
+    DrawCoordinates[2] := DrawCoordinates[0] + 3;
+    DrawCoordinates[3] := DrawCoordinates[1] + 3;
+    self.SimulationImage.Canvas.Rectangle(DrawCoordinates[0], DrawCoordinates[1],
+                                          DrawCoordinates[2], DrawCOordinates[3]);
+    (*self.CreateLog.Lines.Add('Point draw: ');
+    self.CreateLog.Lines.Add(floatToStr(DrawCoordinates[0]) + '; ' + floatToStr(DrawCoordinates[1]));
+    self.CreateLog.Lines.Add(floatToStr(DrawCoordinates[2]) + '; ' + floatToStr(DrawCoordinates[3]));
+
+    self.CreateLog.Lines.Add('Point Target: ');
+    self.CreateLog.Lines.Add(floatToStr(Target.CurPosition.x) + '; ' + floatToStr(Target.CurPosition.y)); *)
+  end;
+  Application.ProcessMessages;
 end;
 
 end.

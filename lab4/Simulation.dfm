@@ -25,28 +25,22 @@ object Form2: TForm2
     ActivePage = SimulationConditions
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 663
-    ExplicitHeight = 505
     object SimulationConditions: TTabSheet
-      Caption = 'SimulationConditions'
-      ExplicitWidth = 655
-      ExplicitHeight = 477
+      Caption = 'Simulation Conditions'
       object RunSimulationSection: TGroupBox
         Left = 345
         Top = 293
         Width = 331
         Height = 190
         Align = alClient
-        Caption = 'RunSimulationSection'
+        Caption = 'Run Simulation'
         TabOrder = 0
-        ExplicitWidth = 310
-        ExplicitHeight = 184
         object RunSimulationButton: TButton
           Left = 176
           Top = 127
           Width = 113
           Height = 34
-          Caption = 'RunSimulationButton'
+          Caption = 'Run Simulation'
           TabOrder = 0
           OnClick = RunSimulationButtonClick
         end
@@ -57,7 +51,7 @@ object Form2: TForm2
         Width = 345
         Height = 190
         Align = alLeft
-        Caption = 'SimulationParam'
+        Caption = 'Simulation Parameters'
         TabOrder = 1
         ExplicitLeft = -6
         ExplicitTop = 297
@@ -66,9 +60,9 @@ object Form2: TForm2
           Top = 96
           Width = 121
           Height = 21
-          EditLabel.Width = 30
+          EditLabel.Width = 16
           EditLabel.Height = 13
-          EditLabel.Caption = 'TKEdit'
+          EditLabel.Caption = 'TK:'
           TabOrder = 1
           Text = '100,0'
         end
@@ -77,9 +71,9 @@ object Form2: TForm2
           Top = 51
           Width = 121
           Height = 21
-          EditLabel.Width = 30
+          EditLabel.Width = 16
           EditLabel.Height = 13
-          EditLabel.Caption = 'T0Edit'
+          EditLabel.Caption = 'T0:'
           TabOrder = 0
           Text = '0,0'
         end
@@ -88,9 +82,9 @@ object Form2: TForm2
           Top = 147
           Width = 121
           Height = 21
-          EditLabel.Width = 31
+          EditLabel.Width = 17
           EditLabel.Height = 13
-          EditLabel.Caption = 'DTEdit'
+          EditLabel.Caption = 'DT:'
           TabOrder = 2
           Text = '0,1'
         end
@@ -101,9 +95,8 @@ object Form2: TForm2
         Width = 676
         Height = 155
         Align = alTop
-        Caption = 'CreateOutput'
+        Caption = 'Create Output'
         TabOrder = 2
-        ExplicitWidth = 655
         object CreateLog: TMemo
           Left = 2
           Top = 15
@@ -111,7 +104,6 @@ object Form2: TForm2
           Height = 138
           Align = alClient
           TabOrder = 0
-          ExplicitWidth = 651
         end
       end
       object CreateSection: TGroupBox
@@ -120,9 +112,8 @@ object Form2: TForm2
         Width = 676
         Height = 138
         Align = alTop
-        Caption = 'CreateSection'
+        Caption = 'Create Section'
         TabOrder = 3
-        ExplicitWidth = 655
         object CreateChoice: TComboBox
           Left = 3
           Top = 20
@@ -143,9 +134,9 @@ object Form2: TForm2
           Width = 515
           Height = 121
           Align = alRight
-          Caption = 'ParamSection'
+          Caption = 'Parameter Section'
           TabOrder = 1
-          ExplicitLeft = 138
+          ExplicitTop = 14
         end
         object XParam: TLabeledEdit
           Left = 168
@@ -156,6 +147,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'X:'
           TabOrder = 2
+          Text = '0,0'
         end
         object YParam: TLabeledEdit
           Left = 247
@@ -166,6 +158,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'Y:'
           TabOrder = 3
+          Text = '0,0'
         end
         object ThirdParam: TLabeledEdit
           Left = 327
@@ -176,6 +169,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'ThirdParam'
           TabOrder = 4
+          Text = '0,0'
         end
         object PParam: TLabeledEdit
           Left = 168
@@ -186,6 +180,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'P:'
           TabOrder = 5
+          Text = '0,0'
         end
         object FuelMassParam: TLabeledEdit
           Left = 247
@@ -196,6 +191,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'Fuel mass:'
           TabOrder = 6
+          Text = '0,0'
         end
         object FuelConsParam: TLabeledEdit
           Left = 327
@@ -206,6 +202,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'Fuel cons:'
           TabOrder = 7
+          Text = '0,0'
         end
         object CritFuelParam: TLabeledEdit
           Left = 407
@@ -216,6 +213,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'Crit Fuel:'
           TabOrder = 8
+          Text = '0,0'
         end
         object SParam: TLabeledEdit
           Left = 487
@@ -226,6 +224,7 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'S:'
           TabOrder = 9
+          Text = '0,0'
         end
         object CxParam: TLabeledEdit
           Left = 567
@@ -236,23 +235,22 @@ object Form2: TForm2
           EditLabel.Height = 13
           EditLabel.Caption = 'Cx:'
           TabOrder = 10
+          Text = '0,0'
         end
         object CreateButton: TButton
           Left = 32
           Top = 73
           Width = 75
           Height = 25
-          Caption = 'CreateButton'
+          Caption = 'Create'
           TabOrder = 11
           OnClick = CreateButtonClick
         end
       end
     end
     object SimulationOutput: TTabSheet
-      Caption = 'SimulationOutput'
+      Caption = 'Simulation Output'
       ImageIndex = 1
-      ExplicitWidth = 672
-      ExplicitHeight = 477
       object SimulationImage: TImage
         Left = 0
         Top = 32
