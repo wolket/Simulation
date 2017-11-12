@@ -141,7 +141,7 @@ interface
         DT: real;
         Integrator: TTargetIntegrator;
         procedure Run;
-        constructor Create(initParam: array of real);
+        constructor Create(initParam: array of real; hander: hWnd);
         destructor Destroy;
       protected
         Handler: hWnd;
@@ -381,13 +381,14 @@ implementation
     inherited Clear;
   end;
 
-  constructor TSimulator.Create(initParam: array of Real);
+  constructor TSimulator.Create(initParam: array of real; hander: hWnd);
   begin
     self.T0 := initParam[0];
     self.TK := initParam[1];
     self.DT := initParam[2];
     self.TargetCount := 0;
     self.Targets := TTargetList.Create;
+    self.Handler := handler;
     assign(self.FT, 'Temp.txt');
     rewrite(self.FT);
     writeln(self.FT, '  time ;  Dist ; Course ;   V   ;  Type');

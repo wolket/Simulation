@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, extctrls, Vcl.StdCtrls,
-  Vcl.Menus;
+  Vcl.Menus, UTargets;
 
 const
   EditLabelWidth = 65;
@@ -44,6 +44,7 @@ type
     procedure OnResize(Sender: TObject);
     procedure CreateChoiceChange(Sender: TObject);
     procedure SwapActive(choice: boolean);
+    procedure OnCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -51,7 +52,7 @@ type
   end;
 
 var
-  Form2: TForm2;
+  Form2: TForm2; Simulator: TSimulator;
 
 implementation
 
@@ -66,6 +67,17 @@ begin
   end;
   if (self.CreateChoice.ItemIndex=0) or (self.CreateChoice.ItemIndex=1) then self.SwapActive(false)
   else self.SwapActive(True);
+end;
+
+procedure TForm2.OnCreate(Sender: TObject);
+var initParam: array[0..2] of real;
+begin
+  initParam[0] := 0; initParam[1] := 100; initParam[2] := 0.1;
+  Simulator.Create(initParam, self.Handle);
+  self.Constraints.MinHeight := 550;
+  self.Constraints.MinWidth := 700;
+  self.PageControl1.Constraints.MinHeight := self.Constraints.MinHeight;
+  self.PageControl1.Constraints.MinWidth := self.Constraints.MinWidth;
 end;
 
 procedure TForm2.OnResize(Sender: TObject);

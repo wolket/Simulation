@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 0
   Caption = 'Form2'
   ClientHeight = 505
-  ClientWidth = 663
+  ClientWidth = 680
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,21 +17,24 @@ object Form2: TForm2
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 663
+    Width = 680
     Height = 505
     ActivePage = SimulationConditions
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 663
     object SimulationConditions: TTabSheet
       Caption = 'SimulationConditions'
+      ExplicitWidth = 655
       object RunSimulationSection: TGroupBox
         Left = 345
         Top = 293
-        Width = 310
+        Width = 327
         Height = 184
         Align = alClient
         Caption = 'RunSimulationSection'
         TabOrder = 0
+        ExplicitWidth = 310
         object RunSimulationButton: TButton
           Left = 176
           Top = 127
@@ -83,32 +86,31 @@ object Form2: TForm2
       object CreateOutput: TGroupBox
         Left = 0
         Top = 0
-        Width = 655
+        Width = 672
         Height = 155
         Align = alTop
         Caption = 'CreateOutput'
         TabOrder = 2
+        ExplicitWidth = 655
         object CreateLog: TMemo
           Left = 2
           Top = 15
-          Width = 651
+          Width = 668
           Height = 138
           Align = alClient
           TabOrder = 0
-          ExplicitLeft = 368
-          ExplicitTop = 66
-          ExplicitWidth = 185
-          ExplicitHeight = 89
+          ExplicitWidth = 651
         end
       end
       object CreateSection: TGroupBox
         Left = 0
         Top = 155
-        Width = 655
+        Width = 672
         Height = 138
         Align = alTop
         Caption = 'CreateSection'
         TabOrder = 3
+        ExplicitWidth = 655
         object CreateChoice: TComboBox
           Left = 3
           Top = 20
@@ -124,13 +126,14 @@ object Form2: TForm2
             'Missile')
         end
         object ParamSection: TGroupBox
-          Left = 138
+          Left = 155
           Top = 15
           Width = 515
           Height = 121
           Align = alRight
           Caption = 'ParamSection'
           TabOrder = 1
+          ExplicitLeft = 138
         end
         object XParam: TLabeledEdit
           Left = 168
@@ -235,8 +238,6 @@ object Form2: TForm2
     object SimulationOutput: TTabSheet
       Caption = 'SimulationOutput'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 28
       object SimulationImage: TImage
         Left = 0
         Top = 32

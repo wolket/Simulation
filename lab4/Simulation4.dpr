@@ -2,7 +2,9 @@ program Simulation4;
 
 uses
   Vcl.Forms,
-  Simulation in 'Simulation.pas' {Form2};
+  Simulation in 'Simulation.pas' {Form2},
+  UTargets in 'UTargets.pas',
+  UIntegrator in 'UIntegrator.pas';
 
 {$R *.res}
 
