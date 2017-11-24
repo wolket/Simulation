@@ -1,7 +1,7 @@
 object Form2: TForm2
   Left = 0
   Top = 0
-  Caption = 'Form2'
+  Caption = 'Simulation'
   ClientHeight = 511
   ClientWidth = 684
   Color = clBtnFace
@@ -14,6 +14,7 @@ object Form2: TForm2
   Font.Style = []
   OldCreateOrder = False
   OnCreate = OnCreate
+  OnDestroy = FormDestroy
   OnResize = OnResize
   PixelsPerInch = 96
   TextHeight = 13
@@ -22,7 +23,7 @@ object Form2: TForm2
     Top = 0
     Width = 684
     Height = 511
-    ActivePage = SimulationConditions
+    ActivePage = SimulationOutput
     Align = alClient
     TabOrder = 0
     object SimulationConditions: TTabSheet
@@ -53,8 +54,6 @@ object Form2: TForm2
         Align = alLeft
         Caption = 'Simulation Parameters'
         TabOrder = 1
-        ExplicitLeft = -6
-        ExplicitTop = 297
         object TKEdit: TLabeledEdit
           Left = 48
           Top = 96
@@ -136,7 +135,6 @@ object Form2: TForm2
           Align = alRight
           Caption = 'Parameter Section'
           TabOrder = 1
-          ExplicitTop = 14
         end
         object XParam: TLabeledEdit
           Left = 168
@@ -253,9 +251,19 @@ object Form2: TForm2
       ImageIndex = 1
       object SimulationImage: TImage
         Left = 0
+        Top = 0
+        Width = 676
+        Height = 483
+        Align = alClient
+        ExplicitWidth = 650
+        ExplicitHeight = 450
+      end
+      object TimeLabel: TLabel
+        Left = 16
         Top = 32
-        Width = 600
-        Height = 400
+        Width = 47
+        Height = 13
+        Caption = 'TimeLabel'
       end
     end
   end

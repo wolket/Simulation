@@ -1,7 +1,7 @@
 Unit UTargets;
 
 interface
-  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages;
+  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages, SysUtils;
 
   const WM_DRAW_SIMULATION = WM_USER+1;
 
@@ -47,6 +47,7 @@ interface
         ResistParam: TResistParam;
 
         constructor Create(TargetType: TTargetType; initParam: array of real);
+        procedure CalcCourse(CP: TPoint);
         function CalcMFuel(ti:real): real; virtual; abstract;
         function CalcResist(ti:real): real; virtual; abstract;
         function CalcP(ti: real): real; virtual; abstract;
@@ -54,6 +55,7 @@ interface
         function CalcX(ti: real): real; virtual; abstract;
         function CalcY(ti: real): real; virtual; abstract;
         function CalcTime(ti: real): real;
+        procedure CalcTarget(Time,dt: real);
 
         function GetV: real;
         procedure SetV(newV: real);
@@ -69,6 +71,7 @@ interface
         Course: real;
         TargetV: real;
         TargetMass: real;
+        CommandPost: TPoint;
 
     end;
 
@@ -139,14 +142,15 @@ interface
         T0: real;
         TK: real;
         DT: real;
+        Handler: hWnd;
         Integrator: TTargetIntegrator;
         procedure Run;
         procedure CreateCP(initParam: array of real);
         procedure CreateRLS(initParam: array of real);
-        constructor Create(initParam: array of real; hander: hWnd);
+        constructor Create(initParam: array of real);
         destructor Destroy;
       protected
-        Handler: hWnd;
+        //Handler: hWnd;
     end;
 
 implementation
@@ -179,12 +183,12 @@ implementation
   begin
     inherited Create(initParam);
     self.TargetType := TargetType;
-    if (self.CurPosition.x <> 0) then self.Course := arctan(self.CurPosition.y/self.CurPosition.x);
+    (*if (self.CurPosition.x <> 0) then self.Course := arctan(self.CurPosition.y/self.CurPosition.x);
     if (self.CurPosition.x > 0) then self.Course := self.Course + pi;
     if (self.CurPosition.x = 0) then begin
       if self.CurPosition.y < 0 then self.Course := pi/2
       else self.Course := -pi/2;
-    end;
+    end;*)
     self.Mass := initParam[3];
     //сразу инвертируем курс чтобы цели летели на КП, в MOVE не нужен минус.
     with self.MoveParam do begin
@@ -224,6 +228,19 @@ implementation
   function TTarget.CalcTime(ti: Real): real;
   begin
     result := 1;
+  end;
+
+  procedure TTarget.CalcCourse(CP: TPoint);
+  var dx, dy: real;
+  begin
+    dx := self.CurPosition.x - CP.x;
+    dy := self.CurPosition.y - CP.y;
+    if (dx <> 0) then self.Course := arctan(self.CurPosition.y/self.CurPosition.x);
+    if (dx > 0) then self.Course := self.Course + pi;
+    if (dx = 0) then begin
+      if dy < 0 then self.Course := pi/2
+      else self.Course := -pi/2;
+    end;
   end;
 
   destructor TTarget.Destroy;
@@ -356,10 +373,8 @@ implementation
   function TTargetList.AddTarget(TargetType: TTargetType; initParam: array of Real): integer;
   var Aircraft: TAircraft; Missile: TMissile;
   begin
-    if TargetType = Air then Aircraft := TAircraft.Create(initParam)
-    else Missile := TMissile.Create(initParam);
-    if Aircraft <> Nil then self.Add(Aircraft)
-    else self.Add(Missile);
+    if TargetType = Air then begin Aircraft := TAircraft.Create(initParam); self.Add(Aircraft); end;
+    if TargetType = Mis then begin Missile := TMissile.Create(initParam); self.Add(Missile); end;
     Aircraft := Nil; Missile := Nil;
     result := self.Count;
   end;
@@ -383,14 +398,13 @@ implementation
     inherited Clear;
   end;
 
-  constructor TSimulator.Create(initParam: array of real; hander: hWnd);
+  constructor TSimulator.Create(initParam: array of real);
   begin
     self.T0 := initParam[0];
     self.TK := initParam[1];
     self.DT := initParam[2];
     self.TargetCount := 0;
     self.Targets := TTargetList.Create;
-    self.Handler := handler;
     assign(self.FT, 'Temp.txt');
     rewrite(self.FT);
     writeln(self.FT, '  time ;  Dist ; Course ;   V   ;  Type');
@@ -410,18 +424,28 @@ implementation
   procedure TSimulator.Run;
   var time: real; item: integer; flag: boolean;
       Target: TTarget; newLine: boolean;
+      i: Integer;
+      CurrentTime: TDateTime;
+      s: String;
   begin
     assign(self.FT, 'temp.txt');
     append(self.FT);
     time := self.T0;
-    flag := False; newLine := False;
+    newLine := False;
+    for i := 0 to self.Targets.Count-1 do
+      self.Targets[i].CalcCourse(self.CP.InitPosition);
+
+    CurrentTime := Now;
+    s := TimeToStr(CurrentTime);
     while time <= self.TK do begin
-      for item := 0 to TargetCount-1 do begin
+      for item := 0 to self.Targets.Count-1 do begin
+
         Target := self.Targets.Items[item];
         self.Integrator.Run(Target, time, time+dt);
         flag := RLS.Peleng(time, Target);
+
         if flag then begin
-          write(self.FT, time:7:3, ';', Target.CurPosition.x:7:3, ';', Target.CurPosition.y, ';', self.Targets[item].V:8:3);
+          write(self.FT, s, ';', Target.CurPosition.x:7:3, ';', Target.CurPosition.y, ';', self.Targets[item].V:8:3);
           if Target.TargetType = Air then write(self.FT, ' Aircraft')
           else write(self.FT, ' Missile');
           newLine := flag;
@@ -429,7 +453,9 @@ implementation
       end;//for item
       time := time + self.DT;
       if newLine then writeln(self.FT, '');
-      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, integer(self));
+      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
+      CurrentTime := Now;
+      s := TimeToStr(CurrentTime);
     end;//while time
     close(self.FT);
   end;//procedure
@@ -440,7 +466,7 @@ implementation
   end;
 
   procedure TTargetIntegrator.Run(var Target: TTarget; t0: real; tk: real);
-  var i: integer; dt, time: real;
+  var dt, time: real;
   begin
     dt := (tK - T0)/self.num;
     time := t0;
@@ -451,26 +477,26 @@ implementation
     end;//while end
   end;//procedure end
 
-  procedure TTargetIntegrator.CalcTarget(var Target: TTarget; Time: Real; Dt: Real);
+  procedure TTarget.CalcTarget(Time: Real; Dt: Real);
   begin
-    if Target.TargetType = Air then
-      with Target as TAircraft do begin
-        Target.MoveParam.mFuel := Target.MoveParam.mFuel - Target.CalcMFuel(time)*dt;
-        Target.ResistParam.X := Target.CalcResist(time);
-        Target.MoveParam.P := Target.CalcP(time);
-        Target.V := Target.V + Target.CalcV(time)*dt;
-        Target.CurPosition.x := Target.CurPosition.x + Target.CalcX(time)*dt;
-        Target.CurPosition.y := Target.CurPosition.y + Target.CalcY(time)*dt;
+    if self.TargetType = Air then
+      with self as TAircraft do begin
+        self.MoveParam.mFuel := self.MoveParam.mFuel - self.CalcMFuel(time)*dt;
+        self.ResistParam.X := self.CalcResist(time);
+        self.MoveParam.P := self.CalcP(time);
+        self.V := self.V + self.CalcV(time)*dt;
+        self.CurPosition.x := self.CurPosition.x + self.CalcX(time)*dt;
+        self.CurPosition.y := self.CurPosition.y + self.CalcY(time)*dt;
       end//with end
 
     else
-      with Target as TMissile do begin
-        Target.MoveParam.mFuel := Target.MoveParam.mFuel - Target.CalcMFuel(time)*dt;
-        Target.ResistParam.X := Target.CalcResist(time);
-        Target.MoveParam.P := Target.CalcP(time);
-        Target.V := Target.V + Target.CalcV(time)*dt;
-        Target.CurPosition.x := Target.CurPosition.x + Target.CalcX(time)*dt;
-        Target.CurPosition.y := Target.CurPosition.y + Target.CalcY(time)*dt;
+      with self as TMissile do begin
+        self.MoveParam.mFuel := self.MoveParam.mFuel - self.CalcMFuel(time)*dt;
+        self.ResistParam.X := self.CalcResist(time);
+        self.MoveParam.P := self.CalcP(time);
+        self.V := self.V + self.CalcV(time)*dt;
+        self.CurPosition.x := self.CurPosition.x + self.CalcX(time)*dt;
+        self.CurPosition.y := self.CurPosition.y + self.CalcY(time)*dt;
       end;//with end
   end;
 end.
