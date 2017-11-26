@@ -1,0 +1,85 @@
+unit Targets;
+
+interface
+  type
+  TTargetType = (Air, Mis);
+  //базовый класс
+  TTarget = class
+    x0, y0: real;       //начальные координаты
+    x, y: real;         //текущие координаты
+    v: real;            //скорость
+    alfa: real;         //угол
+    targetType: TTargetType;       //тип цели
+    time: real;                 //текущее время
+    constructor create(initParam: array of real);  //конструктор с заданием начальных параметров
+    procedure move(ti: real); virtual; abstract;        //передвижение
+    destructor destroy;                                     //деструктор (пустой)
+  end;
+
+  //самолёт
+  TAircraft = class(TTarget)
+    constructor create(initParam: array of real);
+    procedure move(ti: real); override; //перемещение без изменения траектории и скорости
+  end;
+
+  //ракета
+  TMissle = class(TTarget)
+    acc: real; //добавляется ускорение
+    constructor create(initParam: array of real);
+    procedure move(ti: real); override; //перемещение без изменения траектории, скорость меняется
+  end;
+
+implementation
+
+  constructor TTarget.create(initParam: array of real);
+  //задание начальных параметров
+  begin
+    x0 := initParam[0]; x := initParam[1];
+    y0 := initParam[0]; y := initParam[1];
+    time := initParam[2];
+    v := initParam[3];
+    //определение угла
+    if x = 0 then
+      if y > 0 then alfa := pi/2
+      else begin if y < 0 then alfa := pi/2; end
+    else begin
+      alfa := arctan(y0/x0);
+      if (x < 0) and ((y > 0) or (y < 0)) then alfa := alfa + pi;
+    end;
+  end;
+
+  destructor TTarget.destroy;
+  begin
+  end;
+
+  constructor TAircraft.create(initParam: array of real);
+  begin
+    inherited create(initParam);
+    TargetType := Air;
+  end;
+
+  procedure TAircraft.move(ti: real);
+  //движение прямолинейно без изменения скорости
+  begin
+    x := x - v*(ti - time)*cos(alfa);
+    y := y - v*(ti - time)*sin(alfa);
+    time := ti;
+  end;
+
+  constructor TMissle.create(initParam: array of real);
+  begin
+    inherited create(initParam);
+    acc := initParam[4];
+    TargetType := Air;
+  end;
+
+  procedure TMissle.move(ti: Real);
+  //равноускореенное движение по прямой
+  begin
+    x := x - (v+acc*(ti-time))*(ti-time)*cos(alfa);
+    y := y - (v+acc*(ti-time))*(ti-time)*sin(alfa);
+    v := v + acc*(ti - time);
+    time := ti;
+  end;
+
+end.

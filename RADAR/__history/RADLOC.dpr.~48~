@@ -1,0 +1,114 @@
+program RADLOC;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  System.SysUtils,
+  Targets in 'Targets.pas';
+
+const dt = 0.1;
+
+type
+  RLC = class                 //РЛС
+    x,y: real; tar: integer;  //координаты и количество целей
+    R: real; time: real;      //радиус обнаружения и время
+    targets: array of TTarget;      //массив целей
+    constructor create(initParam: array of real);   //конструктор
+    procedure createTargets(initParam: array of real; ttype: TTargetType);
+    procedure peleng(ti: real);     //процедура проверки расстояния до цели и азимута, а также записи, если в радиусе поражения
+    destructor destroy;                 //деструктор (пустой)
+  end;
+
+var
+  Radar: RLC;
+  initParam: array of real;
+  targetCount, i, ttype: integer;
+  t0, time, tk: real;  //время начала, текущее и конечное
+  f: text; //файл для записи
+
+procedure GetDataTarget(var initParam: array of real; ttype: integer);
+begin
+  write('Vvedite nachalnoe polozhenie celi: '); readln(initParam[0], initParam[1]);
+  initParam[2] := t0;
+  write('Vvedite nachalnyu skorost: '); readln(initParam[3]);
+  if (ttype = 1) then write('Vvedite yskorenie raketi: '); readln(initParam[4]);
+end;
+
+procedure GetDataRLC(var initParam: array of real);
+begin
+  write('Vvedite nachalnoe polozhenie radara: '); readln(initParam[0], initParam[1]);
+  initParam[2] := t0;
+  write('Vvedite Rmax: '); readln(initParam[3]);
+end;
+
+constructor RLC.create(initParam: array of real);
+//задание начальных параметров
+begin
+  tar := 0;
+  x := initParam[0]; y := initParam[1];
+  time := initParam[2];
+  R := initParam[3];
+end;
+
+procedure RLC.createTargets(initParam: array of Real; ttype: TTargetType);
+var Aircraft: TAircraft; Missile: TMissile;
+begin
+  inc(tar);
+  setLength(Targets, tar);
+  if ttype = Air then begin Aircraft := TAircraft.create(initParam); Targets[tar - 1] := Aircraft; end
+  else begin Missile := TMissile.create(initParam); Targets[tar - 1] := Missile; end;
+end;
+
+procedure RLC.peleng(ti: real);
+//проверка, находтся ли цель в радиусе обнаружения и запись в файл
+var
+  i: Integer;
+  D, Az: real;        //дистанция и азимут
+begin
+  for i := 0 to tar-1 do begin      //проверка по всему массиву
+    targets[i].move(ti);
+    D := sqrt(sqr(x - targets[i].x)+sqr(y - targets[i].y));    //вычисление дистанции
+    if D <= R then begin                                       //если цель в радиусе обнаружения то происходит запись в файл
+      Az := arctan((targets[i].y - y)/(targets[i].x - x));
+      write(f, D:7:5,';', Az:7:5,';', i:3, ';');
+      if targets[i].targettype = Air then writeln(f, ' air')
+      else writeln(f, ' mis');
+    end;
+  end;
+  time := ti;         //обновление времени РЛС
+end;
+
+destructor RLC.destroy;
+begin
+
+end;
+
+begin
+  write('Input start and finish simulation time: '); readln(t0, tk);    //задание начального и конечного времени
+  assignfile(f, 'temp.txt'); rewrite(f);                                  //открытие на запись
+  writeln(f, ' Dist  ',';  Az   ',';num',';type');                      //шапка для файла
+  setLength(initParam, 4);
+  GetDataRLC(initParam);                                              //создание РЛС
+  Radar := RLC.Create(initParam);
+  write('Vvedite kolichestvo celei: '); readln(targetcount);
+  for i := 0 to targetcount-1 do
+  begin
+    write('Vvedite tip celi(0 - Air, 1 - Mis): '); readln(ttype);
+    if ttype = 0 then setLength(initParam, 4)
+    else setLength(initParam, 5);
+    GetDataTarget(initParam, ttype);
+    if ttype = 0 then Radar.createTargets(initParam, Air)
+    else Radar.createTargets(initParam, Mis);
+  end;
+  time := t0;                                                           //текущее время
+  while time <= tk do begin                                             //основной цикл
+    radar.peleng(time);                                                 //пеленгуем
+    time := time + dt;                                                  //изменение времени
+  end;
+  writeln('Simulation finished');
+  closefile(f);                                                         //закрытие файла
+  writeln('Hit <Enter> to exit.');
+  readln;
+end.                                                                    //тип всё)
