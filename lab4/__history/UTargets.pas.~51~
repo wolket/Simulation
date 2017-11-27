@@ -1,11 +1,13 @@
 Unit UTargets;
 
 interface
-  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages, SysUtils;
+  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages, SysUtils, Classes;
 
   const WM_DRAW_SIMULATION = WM_USER+1;
 
   type
+
+    TProc = procedure(time,dt: real) of object;
     TTargetType = (Air, Mis);
     TPoint = record
       x, y: real;
@@ -127,9 +129,7 @@ interface
 
     TTargetIntegrator = Class(TAIntegrator)
       public
-        procedure Run(var Target: TTarget; t0: real; tk: real);
-      protected
-        procedure CalcTarget(var Target: TTarget; Time, Dt: real);
+        procedure Run(proc: TProc; t0: real; tk: real);
     End;
 
     TSimulator = class
@@ -144,6 +144,7 @@ interface
         DT: real;
         Handler: hWnd;
         Integrator: TTargetIntegrator;
+        DrawSimulation: TNotifyEvent;
         procedure Run;
         procedure CreateCP(initParam: array of real);
         procedure CreateRLS(initParam: array of real);
@@ -441,7 +442,7 @@ implementation
       for item := 0 to self.Targets.Count-1 do begin
 
         Target := self.Targets.Items[item];
-        self.Integrator.Run(Target, time, time+dt);
+        self.Integrator.Run(Target.CalcTarget, time, time+dt);
         flag := RLS.Peleng(time, Target);
 
         if flag then begin
@@ -453,7 +454,8 @@ implementation
       end;//for item
       time := time + self.DT;
       if newLine then writeln(self.FT, '');
-      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
+      DrawSimulation(self);
+      //SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
       CurrentTime := Now;
       s := TimeToStr(CurrentTime);
     end;//while time
@@ -471,8 +473,7 @@ implementation
     dt := (tK - T0)/self.num;
     time := t0;
     while time < TK do begin
-      CalcTarget(Target, time, dt);
-      Target.Time := Target.Time + Target.CalcTime(time)*dt;
+      proc(time, dt);
       time := time + dt;
     end;//while end
   end;//procedure end
@@ -498,5 +499,6 @@ implementation
         self.CurPosition.x := self.CurPosition.x + self.CalcX(time)*dt;
         self.CurPosition.y := self.CurPosition.y + self.CalcY(time)*dt;
       end;//with end
+    self.Time := time;
   end;
 end.

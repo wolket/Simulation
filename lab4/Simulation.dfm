@@ -37,8 +37,8 @@ object Form2: TForm2
         Caption = 'Run Simulation'
         TabOrder = 0
         object RunSimulationButton: TButton
-          Left = 176
-          Top = 127
+          Left = 105
+          Top = 125
           Width = 113
           Height = 34
           Caption = 'Run Simulation'

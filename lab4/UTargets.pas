@@ -1,7 +1,7 @@
 Unit UTargets;
 
 interface
-  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages, SysUtils;
+  uses System.Generics.Collections, UIntegrator, Winapi.Windows, Winapi.Messages, SysUtils, Classes;
 
   const WM_DRAW_SIMULATION = WM_USER+1;
 
@@ -144,6 +144,7 @@ interface
         DT: real;
         Handler: hWnd;
         Integrator: TTargetIntegrator;
+        DrawSimulation: TNotifyEvent;
         procedure Run;
         procedure CreateCP(initParam: array of real);
         procedure CreateRLS(initParam: array of real);
@@ -183,12 +184,6 @@ implementation
   begin
     inherited Create(initParam);
     self.TargetType := TargetType;
-    (*if (self.CurPosition.x <> 0) then self.Course := arctan(self.CurPosition.y/self.CurPosition.x);
-    if (self.CurPosition.x > 0) then self.Course := self.Course + pi;
-    if (self.CurPosition.x = 0) then begin
-      if self.CurPosition.y < 0 then self.Course := pi/2
-      else self.Course := -pi/2;
-    end;*)
     self.Mass := initParam[3];
     //сразу инвертируем курс чтобы цели летели на КП, в MOVE не нужен минус.
     with self.MoveParam do begin
@@ -235,7 +230,7 @@ implementation
   begin
     dx := self.CurPosition.x - CP.x;
     dy := self.CurPosition.y - CP.y;
-    if (dx <> 0) then self.Course := arctan(self.CurPosition.y/self.CurPosition.x);
+    if (dx <> 0) then self.Course := arctan(dy/dx);
     if (dx > 0) then self.Course := self.Course + pi;
     if (dx = 0) then begin
       if dy < 0 then self.Course := pi/2
@@ -433,7 +428,7 @@ implementation
     time := self.T0;
     newLine := False;
     for i := 0 to self.Targets.Count-1 do
-      self.Targets[i].CalcCourse(self.CP.InitPosition);
+       self.Targets[i].CalcCourse(self.CP.CurPosition);
 
     CurrentTime := Now;
     s := TimeToStr(CurrentTime);
@@ -453,7 +448,8 @@ implementation
       end;//for item
       time := time + self.DT;
       if newLine then writeln(self.FT, '');
-      SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
+      DrawSimulation(self);
+      //SendMessage(self.Handler, WM_DRAW_SIMULATION, 0, 0);
       CurrentTime := Now;
       s := TimeToStr(CurrentTime);
     end;//while time

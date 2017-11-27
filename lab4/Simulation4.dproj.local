@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.705,C:\Users\Paul\Documents\RAD Studio\Projects\Unit2.dfm=C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation.dfm</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.705,C:\Users\Paul\Documents\RAD Studio\Projects\Unit2.pas=C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.181,C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation4.dproj=C:\Users\Paul\Documents\RAD Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.705,C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation.pas=C:\Users\Paul\Documents\RAD Studio\Projects\Unit2.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.643,=C:\Users\Paul\Documents\RAD Studio\Projects\Unit2.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.394,=C:\Users\Paul\Documents\GitHub\Simulation\lab4\UIntegrator.pas</Transaction>
     <Transaction>1899.12.30 00:00:00.000.796,=C:\Users\Paul\Documents\GitHub\Simulation\lab4\UTargets.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.181,C:\Users\Paul\Documents\RAD Studio\Projects\Project1.dproj=C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation4.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.705,C:\Users\Paul\Documents\GitHub\Simulation\lab4\Simulation.dfm=C:\Users\Paul\Documents\RAD Studio\Projects\Unit2.dfm</Transaction>
   </Transactions>
 </BorlandProject>

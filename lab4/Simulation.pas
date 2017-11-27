@@ -47,7 +47,8 @@ type
     procedure SwapActive(choice: boolean);
     procedure OnCreate(Sender: TObject);
     procedure CreateButtonClick(Sender: TObject);
-    procedure DrawSimulation(var msg: TMessage); message WM_DRAW_SIMULATION;
+    //procedure DrawSimulation(var msg: TMessage); message WM_DRAW_SIMULATION;
+    procedure DrawSimulation(Sender: TObject);
     procedure RunSimulationButtonClick(Sender: TObject);
     procedure DrawCP;
     procedure DrawRLS;
@@ -57,6 +58,7 @@ type
     FirstCheck: boolean;                    //проверка, была ли в первый раз запущена процедура отрисовки
     Ratio: array[0..1] of real;          //коэффициенты перехода для отрисовки
     count: integer;
+    RT: boolean;
   public
     { Public declarations }
   end;
@@ -147,6 +149,7 @@ var initParam: array[0..2] of real; x,y: real;
 begin
   initParam[0] := 0; initParam[1] := 100; initParam[2] := 0.1;
   Simulator := TSimulator.Create(initParam);
+  Simulator.DrawSimulation := self.DrawSimulation;
   Simulator.Handler := self.Handle;
   self.Constraints.MinHeight := 550;
   self.Constraints.MinWidth := 700;
@@ -155,6 +158,7 @@ begin
   self.T0Edit.Text := '0,0';
   self.TKEdit.Text := '100,0';
   self.DTEdit.Text := '0,1';
+  self.TimeLabel.Caption := '00:00:00';
 
   self.SimulationImage.Align := alClient;
 
@@ -204,8 +208,8 @@ begin
   self.CreateButton.Left := 25;
   self.CreateButton.Top := 70;
 
-  self.RunSimulationButton.Left := self.RunSimulationSection.Width - 150;
-  self.RunSimulationButton.Top := self.RunSimulationSection.Top - 175;
+  self.RunSimulationButton.Left := self.RunSimulationSection.Width - 226;
+  self.RunSimulationButton.Top := self.RunSimulationSection.Height - 65;
 
   self.SimulationImage.Top := 50;
   self.SimulationImage.Left := 10;
@@ -219,6 +223,9 @@ begin
     Simulator.DT := strToFloat(self.DTEdit.Text);
     CreateLog.Lines.Add('Starting Simulation.');
     self.PageControl1.ActivePageIndex := 1;
+    self.CreateButton.Enabled := False;
+    if StrToFloat(self.DTEdit.Text) = 1.0 then self.RT := true else self.RT := false;
+    
     Simulator.Run;
     CreateLog.Lines.Add('Simulation Finished.');
   end;
@@ -238,23 +245,17 @@ begin
   self.CxParam.Enabled := choice;
 end;
 
-procedure TForm2.DrawSimulation(var msg: TMessage);
+(*procedure TForm2.DrawSimulation(var msg: TMessage);
 var target: TTarget;
   k: Integer; MaxX,MaxY: real;
   DrawCoordinates: array[0..3] of integer;
   CurTime: TDateTime;
-procedure CheckMinMax(obj: TPosObject);
-//нахождение максимального значения Х и У объектов симуляции по модулю
-//потом эти значения будут удвоены и составлены коэффициенты перехода
+
+procedure DrawTarget;
 begin
-  if abs(obj.CurPosition.x) > MaxX then MaxX := obj.CurPosition.x;
-  if abs(obj.CurPosition.y) > MaxY then MaxY := obj.CurPosition.y;
-end;
-begin
-  for k := 0 to (Simulator.Targets.Count-1) do begin
-    Target := Simulator.Targets[k];
+  Target := Simulator.Targets[k];
     if (Abs(Target.CurPosition.x*self.Ratio[0]+self.CenterCoordinates[0]) <= self.SimulationImage.Width) and
-       (Abs(-Target.CurPosition.y*self.Ratio[1]+self.CenterCoordinates[1]) <= self.SimulationImage.Height) then begin
+     (Abs(-Target.CurPosition.y*self.Ratio[1]+self.CenterCoordinates[1]) <= self.SimulationImage.Height) then begin
       self.SimulationImage.Canvas.Brush.Color := RGB(255, 0, 0);
       self.SimulationImage.Canvas.Pen.Style := VCL.Graphics.TPenStyle.psClear;
       DrawCoordinates[0] := Trunc(Target.CurPosition.x*self.Ratio[0]+self.CenterCoordinates[0]);
@@ -262,20 +263,18 @@ begin
       DrawCoordinates[2] := DrawCoordinates[0] + 5;
       DrawCoordinates[3] := DrawCoordinates[1] + 5;
       self.SimulationImage.Canvas.Rectangle(DrawCoordinates[0], DrawCoordinates[1],
-                                          DrawCoordinates[2], DrawCOordinates[3]);
-      (*self.CreateLog.Lines.Add('Point draw: ');
-      self.CreateLog.Lines.Add(floatToStr(DrawCoordinates[0]) + '; ' + floatToStr(DrawCoordinates[1]));
-      self.CreateLog.Lines.Add(floatToStr(DrawCoordinates[2]) + '; ' + floatToStr(DrawCoordinates[3]));
-
-      self.CreateLog.Lines.Add('Point Target: ');
-      self.CreateLog.Lines.Add(floatToStr(Target.CurPosition.x) + '; ' + floatToStr(Target.CurPosition.y)); *)
-    end;
+                                            DrawCoordinates[2], DrawCOordinates[3]);
   end;
+end;
+
+begin
+  for k := 0 to (Simulator.Targets.Count-1) do
+    DrawTarget;
   CurTime := Now;
   TimeLabel.Caption := TimeToStr(CurTime);
   while TimeToStr(CurTime) = TimeToStr(Now) do Application.ProcessMessages;
 
-end;
+end; *)
 
 procedure TForm2.FormDestroy(Sender: TObject);
 begin
@@ -312,6 +311,39 @@ begin
                                         Trunc(-Simulator.RLS.CurPosition.y*Ratio[1] + CenterCOordinates[1])-2,
                                         Trunc(Simulator.RLS.CurPosition.x*Ratio[0] + CenterCoordinates[0])+2,
                                         Trunc(-Simulator.RLS.CurPosition.y*Ratio[1] + CenterCOordinates[1])+2);
+
+end;
+
+procedure TForm2.DrawSimulation(Sender: TObject);
+var target: TTarget;
+  k: Integer; MaxX,MaxY: real;
+  DrawCoordinates: array[0..3] of integer;
+  CurTime: TDateTime;
+
+procedure DrawTarget;
+begin
+  Target := Simulator.Targets[k];
+    if (Abs(Target.CurPosition.x*self.Ratio[0]+self.CenterCoordinates[0]) <= self.SimulationImage.Width) and
+     (Abs(-Target.CurPosition.y*self.Ratio[1]+self.CenterCoordinates[1]) <= self.SimulationImage.Height) then begin
+      self.SimulationImage.Canvas.Brush.Color := RGB(255, 0, 0);
+      self.SimulationImage.Canvas.Pen.Style := VCL.Graphics.TPenStyle.psClear;
+      DrawCoordinates[0] := Trunc(Target.CurPosition.x*self.Ratio[0]+self.CenterCoordinates[0]);
+      DrawCoordinates[1] := Trunc(-Target.CurPosition.y*self.Ratio[1]+self.CenterCoordinates[1]);
+      DrawCoordinates[2] := DrawCoordinates[0] + 5;
+      DrawCoordinates[3] := DrawCoordinates[1] + 5;
+      self.SimulationImage.Canvas.Rectangle(DrawCoordinates[0], DrawCoordinates[1],
+                                            DrawCoordinates[2], DrawCOordinates[3]);
+  end;
+end;
+
+begin
+  for k := 0 to Simulator.Targets.Count-1 do
+    DrawTarget;
+  CurTime := Now;
+  TimeLabel.Caption := TimeToStr(CurTime);
+  self.CreateLog.Lines.Add(BoolToStr(self.RT));
+  if self.RT then
+    while TimeToStr(CurTime) = TimeToStr(Now) do Application.ProcessMessages;
 
 end;
 
